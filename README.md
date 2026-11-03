@@ -86,3 +86,21 @@ Run all unit and API tests with:
 ```bash
 python3 -m unittest discover -v
 ```
+
+---
+
+## 6. PR Checks & CI/CD Pipeline
+
+A GitHub Actions workflow is configured in [`.github/workflows/pr-checks.yml`](.github/workflows/pr-checks.yml) that automatically runs on every Pull Request to `main`:
+
+1. **Linting & Syntax Analysis**: Uses `ruff` and `flake8` to check for syntax errors, undefined variables, and code style.
+2. **Matrix Testing**: Runs the complete test suite across Python `3.10`, `3.11`, `3.12`, and `3.13`.
+3. **PR Quality Gate**: Verifies that all status checks have passed before allowing the merge.
+
+### Run PR Checks Locally:
+
+Before creating a PR, you can run the exact same checks locally:
+
+```bash
+./scripts/run_checks.sh
+```
