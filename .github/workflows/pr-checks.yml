@@ -1,4 +1,4 @@
-name: PR Checks
+name: PR Checks & Release Pipeline
 
 # Trigger workflow on Pull Requests to main, pushes to main, or manual run
 on:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   # ============================================================================
-  # Job 1: Code   Linting & Static Analysis
+  # Job 1: Code Linting & Static Analysis
   # ============================================================================
   lint:
     name: Code Linting & Static Analysis
@@ -94,3 +94,58 @@ jobs:
           fi
           echo "✅ All PR checks passed successfully!"
 
+  # ============================================================================
+  # Job 4: Generate & Upload Artifact (Runs ONLY after code is merged to 'main')
+  # ============================================================================
+  package-artifact:
+    name: Generate & Upload Main Release Artifact
+    runs-on: ubuntu-latest
+    needs: [pr-gate]
+    # Condition: Runs ONLY when code is merged/pushed to 'main' (or manual dispatch on main)
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies & Coverage Tool
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install coverage
+
+      - name: Generate Test Coverage Report
+        run: |
+          mkdir -p dist_bundle
+          coverage run -m unittest discover -v
+          coverage report -m
+          coverage html -d dist_bundle/coverage_report
+
+      - name: Assemble Deployable Release Bundle
+        run: |
+          # Copy application and config files to dist_bundle
+          cp app.py relationship_messages.py requirements.txt README.md dist_bundle/
+          
+          # Create build manifest metadata
+          cat <<EOF > dist_bundle/build-metadata.json
+          {
+            "project": "healthy_relationships",
+            "branch": "${{ github.ref_name }}",
+            "commit_sha": "${{ github.sha }}",
+            "triggered_by": "${{ github.actor }}",
+            "event_name": "${{ github.event_name }}",
+            "build_timestamp_utc": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          }
+          EOF
+
+      - name: Upload Release Artifact to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: healthy-relationships-main-release
+          path: dist_bundle/
+          retention-days: 30
