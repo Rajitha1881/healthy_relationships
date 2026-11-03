@@ -91,11 +91,20 @@ python3 -m unittest discover -v
 
 ## 6. PR Checks & CI/CD Pipeline
 
-A GitHub Actions workflow is configured in [`.github/workflows/pr-checks.yml`](.github/workflows/pr-checks.yml) that automatically runs on every Pull Request to `main`:
+A GitHub Actions workflow is configured in [`.github/workflows/pr-checks.yml`](.github/workflows/pr-checks.yml):
 
-1. **Linting & Syntax Analysis**: Uses `ruff` and `flake8` to check for syntax errors, undefined variables, and code style.
-2. **Matrix Testing**: Runs the complete test suite across Python `3.10`, `3.11`, `3.12`, and `3.13`.
-3. **PR Quality Gate**: Verifies that all status checks have passed before allowing the merge.
+1. **Pull Request Checks**:
+   - **Linting & Syntax Analysis**: Uses `ruff` and `flake8` to check for syntax errors, undefined variables, and code style.
+   - **Matrix Testing**: Runs the complete test suite across Python `3.10`, `3.11`, `3.12`, and `3.13`.
+   - **PR Quality Gate**: Verifies that all status checks have passed before allowing the merge.
+
+2. **Main Branch Release Artifact Generation**:
+   - Once a PR is **merged into the `main` branch**, the pipeline automatically generates and uploads a downloadable **Release Artifact** (`healthy-relationships-main-release`).
+   - The artifact includes:
+     - The deployable application files (`app.py`, `relationship_messages.py`, `requirements.txt`).
+     - An interactive HTML test coverage report (`coverage_report/`).
+     - A build metadata manifest (`build-metadata.json`) containing commit SHA, branch, and build timestamp.
+   - You can download this artifact directly from the **Actions** tab on GitHub under the completed workflow run.
 
 ### Run PR Checks Locally:
 
