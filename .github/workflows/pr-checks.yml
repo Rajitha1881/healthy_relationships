@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   # ============================================================================
-  # Job 1: Code Linting & Static Analysis
+  # Job 1: Code   Linting & Static Analysis
   # ============================================================================
   lint:
     name: Code Linting & Static Analysis
