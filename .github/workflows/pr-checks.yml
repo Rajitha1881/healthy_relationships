@@ -1,4 +1,4 @@
-name: PR Checks & CI Pipeline
+name: PR Checks
 
 # Trigger workflow on Pull Requests to main, pushes to main, or manual run
 on:
