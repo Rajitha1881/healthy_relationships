@@ -57,6 +57,12 @@ Or using **Docker Compose**:
 docker compose up --build
 ```
 
+Or pull the published image directly from **GitHub Packages (GHCR)**:
+
+```bash
+docker run -p 8000:8000 ghcr.io/rajitha1881/healthy_relationships:latest
+```
+
 The containerized app will be available at `http://localhost:8000`.
 
 ---
@@ -121,13 +127,11 @@ A GitHub Actions workflow is configured in [`.github/workflows/pr-checks.yml`](.
    - **Matrix Testing**: Runs the complete test suite across Python `3.10`, `3.11`, `3.12`, and `3.13`.
    - **PR Quality Gate**: Verifies that all status checks have passed before allowing the merge.
 
-2. **Main Branch Release Artifact Generation**:
-   - Once a PR is **merged into the `main` branch**, the pipeline automatically generates and uploads a downloadable **Release Artifact** (`healthy-relationships-main-release`).
-   - The artifact includes:
-     - The deployable application files (`app.py`, `relationship_messages.py`, `requirements.txt`).
-     - An interactive HTML test coverage report (`coverage_report/`).
-     - A build metadata manifest (`build-metadata.json`) containing commit SHA, branch, and build timestamp.
-   - You can download this artifact directly from the **Actions** tab on GitHub under the completed workflow run.
+2. **Main Branch Release Artifact & Docker Image Publishing**:
+   - Once a PR is **merged into the `main` branch**, the pipeline automatically:
+     - Generates and uploads a downloadable **Release Artifact** (`healthy-relationships-main-release`) containing code, test coverage HTML report, and build manifest.
+     - Builds and pushes a production **Docker Container Image** to **GitHub Container Registry (GHCR)** tagged with `latest` and commit SHA (`ghcr.io/rajitha1881/healthy_relationships:latest`).
+   - The container image appears under the **Packages** section on GitHub.
 
 ### Run PR Checks Locally:
 
