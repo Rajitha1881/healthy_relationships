@@ -5,9 +5,12 @@ This repository deals with entire SDLC practice starting from writing Python cod
 ## Project Structure
 
 - [`relationship_messages.py`](relationship_messages.py): Core module containing relationship messages, retrieval functions, and CLI execution.
-- [`app.py`](app.py): REST API built with FastAPI exposing endpoints for messages and categories.
+- [`app.py`](app.py): REST API built with FastAPI exposing v1 and v2 endpoints for messages, challenges, and categories.
 - [`test_relationship_messages.py`](test_relationship_messages.py): Unit tests for the core Python functions.
 - [`test_app.py`](test_app.py): Integration and unit tests for the FastAPI web endpoints.
+- [`Dockerfile`](Dockerfile): Multi-stage containerization specification.
+- [`docker-compose.yml`](docker-compose.yml): Single-command local container orchestration.
+- [`RUNBOOK.md`](RUNBOOK.md): Complete Operations Runbook (architecture, deployment, troubleshooting playbooks).
 - [`requirements.txt`](requirements.txt): Pinned dependencies for the environment.
 
 ---
@@ -18,8 +21,8 @@ This repository deals with entire SDLC practice starting from writing Python cod
   👉 **[https://rajitha1881.github.io/healthy_relationships/](https://rajitha1881.github.io/healthy_relationships/)**
 
 - **Live Cloud REST API Endpoints (Render Cloud)**:  
-  👉 **`https://healthy-relationships-api.onrender.com/message?category=growth`**  
-  👉 **`https://healthy-relationships-api.onrender.com/docs`** *(Swagger Docs)*
+  👉 **[https://healthy-relationships.onrender.com/message?category=growth](https://healthy-relationships.onrender.com/message?category=growth)**  
+  👉 **[https://healthy-relationships.onrender.com/docs](https://healthy-relationships.onrender.com/docs)** *(Interactive Swagger Docs)*
 
 ---
 
