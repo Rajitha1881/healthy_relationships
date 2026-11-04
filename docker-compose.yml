@@ -1,0 +1,13 @@
+services:
+  healthy-relationships-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthy_relationships_app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    restart: unless-stopped
+

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.github/
+dist_bundle/
+coverage_html/
+.coverage
+.DS_Store
+*.log
+

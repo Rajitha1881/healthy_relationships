@@ -24,17 +24,40 @@ pip install -r requirements.txt
 
 ## 2. Running the API Web Server
 
-Start the FastAPI application with Uvicorn:
+### Option A: Running with Python Locally
+Start the application with:
 
 ```bash
 python3 app.py
 ```
-Or:
+Or with Uvicorn:
 ```bash
 uvicorn app:app --reload
 ```
 
 The server runs at `http://127.0.0.1:8000`.
+
+---
+
+### Option B: Running with Docker 🐳
+
+Build and run using Docker:
+
+```bash
+# 1. Build the Docker image
+docker build -t healthy-relationships-app .
+
+# 2. Run the container
+docker run -p 8000:8000 --name healthy-app healthy-relationships-app
+```
+
+Or using **Docker Compose**:
+
+```bash
+docker compose up --build
+```
+
+The containerized app will be available at `http://localhost:8000`.
 
 ---
 
