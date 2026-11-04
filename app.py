@@ -10,11 +10,19 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Optional, List
 
 # Core message functions from relationship_messages.py
-from relationship_messages import get_relationship_message, get_categories, MESSAGES
+from relationship_messages import (
+    get_relationship_message,
+    get_categories,
+    get_relationship_message_v2,
+    get_daily_challenge,
+    MESSAGES,
+    CHALLENGES,
+    TAGS,
+)
 
 # Check if FastAPI is installed in the active environment
 try:
-    from fastapi import FastAPI, HTTPException, Query, Request
+    from fastapi import FastAPI, HTTPException, Query, Request, APIRouter
     from fastapi.responses import HTMLResponse, JSONResponse
     from pydantic import BaseModel, Field
     HAS_FASTAPI = True
@@ -109,10 +117,13 @@ HTML_UI = """<!DOCTYPE html>
 if HAS_FASTAPI:
     app = FastAPI(
         title="Healthy Relationships API",
-        description="An API providing healthy relationship advice, tips, and affirmations.",
-        version="1.0.0",
+        description="A multi-version API providing healthy relationship advice, tips, affirmations, and actionable challenges.",
+        version="2.0.0",
     )
 
+    # --------------------------------------------------------------------------
+    # Schemas: Version 1 (Basic / Flat Format)
+    # --------------------------------------------------------------------------
     class MessageResponse(BaseModel):
         category: str = Field(..., description="The category of the relationship message.")
         message: str = Field(..., description="The advice or affirmation.")
@@ -124,6 +135,34 @@ if HAS_FASTAPI:
         categories: List[str]
         count: int
 
+    # --------------------------------------------------------------------------
+    # Schemas: Version 2 (Enhanced with Challenges & Metadata)
+    # --------------------------------------------------------------------------
+    class MessageMetadata(BaseModel):
+        char_count: int = Field(..., description="Total characters in the message.")
+        word_count: int = Field(..., description="Total words in the message.")
+        estimated_read_seconds: int = Field(..., description="Estimated reading duration.")
+        community_rating: float = Field(..., description="Average rating for this message.")
+
+    class MessageResponseV2(BaseModel):
+        id: str = Field(..., description="Unique message ID.")
+        version: str = Field("2.0", description="API schema version.")
+        category: str = Field(..., description="The message category.")
+        message: str = Field(..., description="The affirmation or relationship guidance.")
+        actionable_challenge: str = Field(..., description="A real-world actionable challenge to practice today.")
+        tags: List[str] = Field(..., description="Psychological and relationship topic tags.")
+        metadata: MessageMetadata = Field(..., description="Analytical message metadata.")
+
+    class DailyChallengeResponse(BaseModel):
+        version: str = Field("2.0", description="API schema version.")
+        category: str = Field(..., description="Challenge category.")
+        daily_challenge: str = Field(..., description="The challenge to practice today.")
+        difficulty: str = Field(..., description="Challenge intensity (e.g. Gentle & Easy, Deep Connection).")
+        recommended_duration_minutes: int = Field(..., description="Suggested time to spend on challenge.")
+
+    # --------------------------------------------------------------------------
+    # Root & General Endpoints
+    # --------------------------------------------------------------------------
     @app.get("/", summary="Root Endpoint")
     def root(request: Request):
         # If opened in a browser (Accept: text/html), serve the interactive web app!
@@ -135,20 +174,24 @@ if HAS_FASTAPI:
             "app": "Healthy Relationships API",
             "status": "online",
             "documentation": "/docs",
-            "endpoints": {
-                "GET /categories": "List all categories",
-                "GET /message": "Get message (supports ?category=...)",
-                "GET /message/{category}": "Get message by category path",
-                "POST /message": "Get message with JSON body",
+            "versions": {
+                "v1": {
+                    "description": "Standard basic message API",
+                    "endpoints": ["GET /api/v1/message", "GET /api/v1/categories"]
+                },
+                "v2": {
+                    "description": "Enhanced API with actionable daily challenges, tags, and analytics",
+                    "endpoints": ["GET /api/v2/message", "GET /api/v2/daily-challenge", "GET /api/v2/categories"]
+                }
             },
         }
 
-    @app.get("/categories", response_model=CategoriesResponse, summary="List Categories")
+    @app.get("/categories", response_model=CategoriesResponse, summary="List Categories (Default)", tags=["General"])
     def list_categories():
         cats = get_categories()
         return {"categories": cats, "count": len(cats)}
 
-    @app.get("/message", response_model=MessageResponse, summary="Get Message")
+    @app.get("/message", response_model=MessageResponse, summary="Get Message (Default / Backward Compatible)", tags=["General"])
     def get_message_by_query(category: Optional[str] = Query(default=None)):
         try:
             msg = get_relationship_message(category)
@@ -157,7 +200,7 @@ if HAS_FASTAPI:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
-    @app.get("/message/{category}", response_model=MessageResponse, summary="Get Message by Path")
+    @app.get("/message/{category}", response_model=MessageResponse, summary="Get Message by Path", tags=["General"])
     def get_message_by_path(category: str):
         try:
             msg = get_relationship_message(category)
@@ -165,7 +208,7 @@ if HAS_FASTAPI:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
-    @app.post("/message", response_model=MessageResponse, summary="Get Message via POST")
+    @app.post("/message", response_model=MessageResponse, summary="Get Message via POST", tags=["General"])
     def post_message_request(payload: MessageRequest):
         try:
             msg = get_relationship_message(payload.category)
@@ -173,6 +216,75 @@ if HAS_FASTAPI:
             return {"category": cat_name, "message": msg}
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
+
+    # --------------------------------------------------------------------------
+    # Version 1 Router (/api/v1)
+    # --------------------------------------------------------------------------
+    v1_router = APIRouter(prefix="/api/v1", tags=["Version 1 - Basic"])
+
+    @v1_router.get("/message", response_model=MessageResponse, summary="Get Message (v1)")
+    def v1_get_message(category: Optional[str] = Query(default=None)):
+        """Returns standard v1 message string and category."""
+        try:
+            msg = get_relationship_message(category)
+            cat_name = category.strip().lower() if category else "random"
+            return {"category": cat_name, "message": msg}
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+    @v1_router.get("/categories", response_model=CategoriesResponse, summary="List Categories (v1)")
+    def v1_list_categories():
+        cats = get_categories()
+        return {"categories": cats, "count": len(cats)}
+
+    app.include_router(v1_router)
+
+    # --------------------------------------------------------------------------
+    # Version 2 Router (/api/v2) - New Features!
+    # --------------------------------------------------------------------------
+    v2_router = APIRouter(prefix="/api/v2", tags=["Version 2 - Enhanced with Challenges"])
+
+    @v2_router.get("/message", response_model=MessageResponseV2, summary="Get Rich Message with Challenge (v2)")
+    def v2_get_message(category: Optional[str] = Query(default=None, description="Optional category (growth, communication, etc.)")):
+        """
+        **V2 Endpoint**: Returns a rich relationship object containing:
+        - Unique ID
+        - Advice message
+        - **Actionable real-world challenge to practice today**
+        - Psychological tags
+        - Analytical metadata (char count, read time, rating)
+        """
+        try:
+            return get_relationship_message_v2(category)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+    @v2_router.get("/daily-challenge", response_model=DailyChallengeResponse, summary="Get Daily Actionable Challenge (v2)")
+    def v2_get_daily_challenge(category: Optional[str] = Query(default=None)):
+        """
+        **V2 Unique Endpoint**: Generates an actionable daily exercise designed to improve communication, appreciation, or boundaries.
+        """
+        try:
+            return get_daily_challenge(category)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+    @v2_router.get("/categories", summary="List Categories with Metadata (v2)")
+    def v2_list_categories():
+        """
+        **V2 Endpoint**: Returns all categories enriched with item counts and tags.
+        """
+        cats = []
+        for key in MESSAGES.keys():
+            cats.append({
+                "category": key,
+                "total_messages": len(MESSAGES[key]),
+                "total_challenges": len(CHALLENGES.get(key, [])),
+                "tags": TAGS.get(key, []),
+            })
+        return {"version": "2.0", "total_categories": len(cats), "categories": cats}
+
+    app.include_router(v2_router)
 
 
 # ==============================================================================
@@ -228,14 +340,14 @@ class BuiltinRelationshipHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 2. Categories: GET /categories
-        if path == "/categories":
+        # 2. Categories: GET /categories or /api/v1/categories
+        if path in ("/categories", "/api/v1/categories"):
             cats = get_categories()
             self._send_json(200, {"categories": cats, "count": len(cats)})
             return
 
-        # 3. Message by query: GET /message?category=growth
-        if path == "/message":
+        # 3. Message by query: GET /message or /api/v1/message
+        if path in ("/message", "/api/v1/message"):
             category = query_params.get("category", [None])[0]
             try:
                 msg = get_relationship_message(category)
@@ -245,7 +357,40 @@ class BuiltinRelationshipHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"detail": str(e)})
             return
 
-        # 4. Message by path: GET /message/<category>
+        # 4. V2 Message: GET /api/v2/message
+        if path == "/api/v2/message":
+            category = query_params.get("category", [None])[0]
+            try:
+                data = get_relationship_message_v2(category)
+                self._send_json(200, data)
+            except ValueError as e:
+                self._send_json(404, {"detail": str(e)})
+            return
+
+        # 5. V2 Daily Challenge: GET /api/v2/daily-challenge
+        if path == "/api/v2/daily-challenge":
+            category = query_params.get("category", [None])[0]
+            try:
+                data = get_daily_challenge(category)
+                self._send_json(200, data)
+            except ValueError as e:
+                self._send_json(404, {"detail": str(e)})
+            return
+
+        # 6. V2 Categories: GET /api/v2/categories
+        if path == "/api/v2/categories":
+            cats = []
+            for key in MESSAGES.keys():
+                cats.append({
+                    "category": key,
+                    "total_messages": len(MESSAGES[key]),
+                    "total_challenges": len(CHALLENGES.get(key, [])),
+                    "tags": TAGS.get(key, []),
+                })
+            self._send_json(200, {"version": "2.0", "total_categories": len(cats), "categories": cats})
+            return
+
+        # 7. Message by path: GET /message/<category>
         parts = path.split("/")
         if len(parts) == 3 and parts[1] == "message":
             category = parts[2]
