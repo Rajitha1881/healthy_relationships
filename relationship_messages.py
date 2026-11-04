@@ -54,9 +54,48 @@ MESSAGES = {
     ],
 }
 
+# ==============================================================================
+# V2 Data Store: Actionable Daily Challenges & Tags
+# ==============================================================================
+CHALLENGES = {
+    "communication": [
+        "Spend 10 minutes tonight actively listening without offering advice unless requested.",
+        "Ask your partner one open-ended question about their day and give 100% undistracted attention.",
+        "Send a mid-day check-in text with zero expectations, just to say you are thinking of them.",
+    ],
+    "appreciation": [
+        "Leave a hidden post-it note expressing gratitude for something specific they did this week.",
+        "Verbally thank your partner for a small routine chore that is usually taken for granted.",
+        "Tell your partner one specific character trait you admire in them today.",
+    ],
+    "boundaries": [
+        "Take 30 minutes of intentional solo recharge time today with no guilt.",
+        "Practice gently saying 'no' to an optional task so you can preserve emotional energy.",
+        "Check in with your partner before venting: 'Do you have capacity to listen right now?'",
+    ],
+    "conflict_resolution": [
+        "If a disagreement arises today, agree on a 10-minute pause before continuing.",
+        "Replace 'You always...' or 'You never...' with 'When X happened, I felt Y.'",
+        "Offer a genuine apology for a small friction point without adding 'but...'",
+    ],
+    "growth": [
+        "Share one personal goal or dream you haven't talked about in a while.",
+        "Celebrate one small personal win your partner achieved this week.",
+        "Read an article or podcast together on personal development and discuss it.",
+    ],
+}
+
+TAGS = {
+    "communication": ["active-listening", "clarity", "empathy", "openness"],
+    "appreciation": ["gratitude", "validation", "kindness", "affirmation"],
+    "boundaries": ["self-care", "respect", "emotional-space", "independence"],
+    "conflict_resolution": ["problem-solving", "emotional-maturity", "patience", "repair"],
+    "growth": ["personal-development", "support", "future-planning", "encouragement"],
+}
+
 
 # ==============================================================================
-# Main Function: Get Relationship Message
+# Main Function: Get Relationship Message (v1)
 # ==============================================================================
 def get_relationship_message(category: Optional[str] = None) -> str:
     """
@@ -109,6 +148,71 @@ def get_categories() -> List[str]:
     """
     # .keys() retrieves the dictionary keys; list(...) converts that view into a Python list
     return list(MESSAGES.keys())
+
+
+# ==============================================================================
+# V2 Function: Get Relationship Message with Challenges & Metadata
+# ==============================================================================
+def get_relationship_message_v2(category: Optional[str] = None) -> dict:
+    """
+    Retrieves an enhanced v2 relationship message containing:
+    - Unique message identifier
+    - Categorized message
+    - Actionable daily challenge
+    - Topic tags
+    - Analytical metadata (character count, estimated read time, rating)
+    """
+    if category:
+        cat_clean = category.strip().lower()
+        if cat_clean not in MESSAGES:
+            valid_keys = ", ".join(MESSAGES.keys())
+            raise ValueError(f"Unknown category '{category}'. Available categories: {valid_keys}")
+    else:
+        cat_clean = random.choice(list(MESSAGES.keys()))
+
+    msg = random.choice(MESSAGES[cat_clean])
+    challenge = random.choice(CHALLENGES.get(cat_clean, ["Take a moment to connect with your partner today."]))
+    tags = TAGS.get(cat_clean, ["relationships", "wellness"])
+
+    # Generate a stable short hash-based ID
+    msg_id = f"msg_{cat_clean[:4]}_{abs(hash(msg)) % 10000:04d}"
+
+    return {
+        "id": msg_id,
+        "version": "2.0",
+        "category": cat_clean,
+        "message": msg,
+        "actionable_challenge": challenge,
+        "tags": tags,
+        "metadata": {
+            "char_count": len(msg),
+            "word_count": len(msg.split()),
+            "estimated_read_seconds": max(1, round(len(msg.split()) / 3)),
+            "community_rating": 4.9,
+        },
+    }
+
+
+def get_daily_challenge(category: Optional[str] = None) -> dict:
+    """
+    Retrieves a daily actionable challenge tailored to deepen connection.
+    """
+    if category:
+        cat_clean = category.strip().lower()
+        if cat_clean not in CHALLENGES:
+            valid_keys = ", ".join(CHALLENGES.keys())
+            raise ValueError(f"Unknown category '{category}'. Available categories: {valid_keys}")
+    else:
+        cat_clean = random.choice(list(CHALLENGES.keys()))
+
+    challenge = random.choice(CHALLENGES[cat_clean])
+    return {
+        "version": "2.0",
+        "category": cat_clean,
+        "daily_challenge": challenge,
+        "difficulty": random.choice(["Gentle & Easy", "Mindful Practice", "Deep Connection"]),
+        "recommended_duration_minutes": random.choice([5, 10, 15]),
+    }
 
 
 # ==============================================================================

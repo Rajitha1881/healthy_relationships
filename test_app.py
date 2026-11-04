@@ -100,6 +100,36 @@ class TestBuiltinAPI(unittest.TestCase):
         error_data = json.loads(ctx.exception.read().decode())
         self.assertIn("Unknown category", error_data["detail"])
 
+    def test_v2_message_endpoint(self):
+        """Test GET /api/v2/message returns rich v2 structure with actionable challenge."""
+        with urllib.request.urlopen(f"{self.base_url}/api/v2/message?category=growth") as response:
+            self.assertEqual(response.status, 200)
+            data = json.loads(response.read().decode())
+            self.assertEqual(data["version"], "2.0")
+            self.assertEqual(data["category"], "growth")
+            self.assertIn("actionable_challenge", data)
+            self.assertIn("tags", data)
+            self.assertIn("metadata", data)
+            self.assertIn("char_count", data["metadata"])
+
+    def test_v2_daily_challenge_endpoint(self):
+        """Test GET /api/v2/daily-challenge returns an actionable challenge."""
+        with urllib.request.urlopen(f"{self.base_url}/api/v2/daily-challenge?category=communication") as response:
+            self.assertEqual(response.status, 200)
+            data = json.loads(response.read().decode())
+            self.assertEqual(data["version"], "2.0")
+            self.assertEqual(data["category"], "communication")
+            self.assertIn("daily_challenge", data)
+            self.assertIn("difficulty", data)
+
+    def test_v2_categories_endpoint(self):
+        """Test GET /api/v2/categories returns rich category metadata."""
+        with urllib.request.urlopen(f"{self.base_url}/api/v2/categories") as response:
+            self.assertEqual(response.status, 200)
+            data = json.loads(response.read().decode())
+            self.assertEqual(data["version"], "2.0")
+            self.assertEqual(data["total_categories"], len(MESSAGES))
+
 
 # ==============================================================================
 # Optional: FastAPI TestClient Tests (Only runs if FastAPI is installed)

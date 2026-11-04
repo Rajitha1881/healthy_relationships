@@ -14,9 +14,12 @@ This repository deals with entire SDLC practice starting from writing Python cod
 
 ## Live Web App & Shareable URL 🌐
 
-You can access and share the live interactive application online directly via **GitHub Pages**:
+- **Interactive Frontend Web App (GitHub Pages)**:  
+  👉 **[https://rajitha1881.github.io/healthy_relationships/](https://rajitha1881.github.io/healthy_relationships/)**
 
-👉 **[https://rajitha1881.github.io/healthy_relationships/](https://rajitha1881.github.io/healthy_relationships/)**
+- **Live Cloud REST API Endpoints (Render Cloud)**:  
+  👉 **`https://healthy-relationships-api.onrender.com/message?category=growth`**  
+  👉 **`https://healthy-relationships-api.onrender.com/docs`** *(Swagger Docs)*
 
 ---
 
