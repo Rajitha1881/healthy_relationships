@@ -12,6 +12,14 @@ This repository deals with entire SDLC practice starting from writing Python cod
 
 ---
 
+## Live Web App & Shareable URL 🌐
+
+You can access and share the live interactive application online directly via **GitHub Pages**:
+
+👉 **[https://rajitha1881.github.io/healthy_relationships/](https://rajitha1881.github.io/healthy_relationships/)**
+
+---
+
 ## 1. Setup Virtual Environment
 
 ```bash
