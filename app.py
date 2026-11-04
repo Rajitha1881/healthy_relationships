@@ -292,18 +292,25 @@ class BuiltinRelationshipHandler(BaseHTTPRequestHandler):
 # ==============================================================================
 # Server Startup Entry Point
 # ==============================================================================
-def start_server(port: int = 8000):
+def start_server(host: Optional[str] = None, port: Optional[int] = None):
+    import os
+    # Read host and port from environment variables, defaulting to 0.0.0.0:8000
+    # (0.0.0.0 allows connections from both localhost and Docker container networks)
+    resolved_host = host or os.getenv("HOST", "0.0.0.0")
+    resolved_port = port or int(os.getenv("PORT", 8000))
+    reload_enabled = os.getenv("RELOAD", "false").lower() == "true"
+
     if HAS_FASTAPI:
         import uvicorn
         print("Starting FastAPI server with Uvicorn...")
-        print(f"Web App & API URL: http://127.0.0.1:{port}")
-        print(f"Interactive Swagger Docs: http://127.0.0.1:{port}/docs\n")
-        uvicorn.run("app:app", host="127.0.0.1", port=port, reload=True)
+        print(f"Web App & API URL: http://{resolved_host}:{resolved_port}")
+        print(f"Interactive Swagger Docs: http://{resolved_host}:{resolved_port}/docs\n")
+        uvicorn.run("app:app", host=resolved_host, port=resolved_port, reload=reload_enabled)
     else:
         print(f"FastAPI not detected in current environment.")
-        print(f"Starting built-in Python HTTP server at http://127.0.0.1:{port}")
+        print(f"Starting built-in Python HTTP server at http://{resolved_host}:{resolved_port}")
         print("Note: To run with FastAPI and interactive /docs, run: .venv/bin/python app.py\n")
-        server = HTTPServer(("127.0.0.1", port), BuiltinRelationshipHandler)
+        server = HTTPServer((resolved_host, resolved_port), BuiltinRelationshipHandler)
         try:
             server.serve_forever()
         except KeyboardInterrupt:
@@ -311,4 +318,4 @@ def start_server(port: int = 8000):
 
 
 if __name__ == "__main__":
-    start_server(8000)
+    start_server()
