@@ -82,6 +82,7 @@ def build():
       <span>Docker Container: <code>docker pull ghcr.io/rajitha1881/healthy_relationships:latest</code></span>
       <br><br>
       <a href="https://github.com/Rajitha1881/healthy_relationships" target="_blank">View on GitHub</a> •
+      <a href="https://github.com/Rajitha1881/healthy_relationships/blob/main/RUNBOOK.md" target="_blank">Operations Runbook</a> •
       <a href="https://github.com/Rajitha1881/healthy_relationships/pkgs/container/healthy_relationships" target="_blank">GitHub Packages</a>
     </div>
   </div>

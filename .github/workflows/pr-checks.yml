@@ -128,7 +128,7 @@ jobs:
 
       - name: Assemble Deployable Release Bundle
         run: |
-          cp app.py relationship_messages.py requirements.txt README.md dist_bundle/
+          cp app.py relationship_messages.py requirements.txt README.md RUNBOOK.md dist_bundle/
           cat <<EOF > dist_bundle/build-metadata.json
           {
             "project": "healthy_relationships",
