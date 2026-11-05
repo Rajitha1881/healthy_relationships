@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY relationship_messages.py .
 COPY app.py .
 COPY README.md .
+COPY RUNBOOK.md .
 
 # Create a non-privileged user for security compliance (avoid running as root)
 RUN useradd -u 1000 appuser && \
